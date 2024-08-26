@@ -118,15 +118,15 @@ router.post('/login', async function(req, res, next) {
       let user = result.Items[0];
       req.session.username = user.user_name;
       req.session.email = user.email;
+      let songs = [];
       if (user?.subscribed)
       {
-          let songs = [];
           for (i = 0; i < user.subscribed.length; i++)
               songs.push({artist: user.subscribed[i].artist,
                           title:  user.subscribed[i].title,
                           year:   user.subscribed[i].year});
-          req.session.subscribed = songs;
       }
+      req.session.subscribed = songs;
     }
 
     res.send({'authenticated': (result.Count > 0)});

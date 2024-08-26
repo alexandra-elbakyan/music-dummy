@@ -16,6 +16,8 @@
           my.innerHTML += song(item, 'remove');
           index[[item.year,item.artist,item.title].join('||')] = true;
         });
+        if (songs.length == 0)
+            document.getElementById('subscription').style.display = 'none';
       };
 
       async function subscribe(id)
@@ -30,6 +32,7 @@
                     document.getElementById('subscription').appendChild(newsong);
                     song.remove();
                     document.getElementById('button-' + id).innerHTML = 'remove';
+                    document.getElementById('subscription').style.display = 'block';
                 }
             });
       }
