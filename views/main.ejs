@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>setup</title>
+    <script src="/javascripts/axios.min.js"></script>
+  </head>
+  <body>
+    <script>
+
+      var songs = JSON.parse("<%= songs %>".replaceAll('&#34;', '"'));
+      var index = {};
+
+      window.onload = function(event) {
+        var my = document.getElementById('subscription');
+        songs.forEach(item => {
+          my.innerHTML += song(item, 'remove');
+          index[[item.year,item.artist,item.title].join('||')] = true;
+        });
+      };
+
+      async function subscribe(id)
+      {
+          var [year, artist, title] = id.split('||');
+          await axios.post('/user/subscribe', { title: title,  artist: artist, year: year}).then(
+            function (response) {
+                if (response.data.subscribed)
+                {
+                    let song = document.getElementById(id);
+                    let newsong = song.cloneNode(true);
+                    document.getElementById('subscription').appendChild(newsong);
+                    song.remove();
+                    document.getElementById('button-' + id).innerHTML = 'remove';
+                }
+            });
+      }
+    
+      async function remove(id)
+      {
+        var [year, artist, title] = id.split('||');
+          await axios.post('/user/remove', { title: title,  artist: artist, year: year}).then(
+            function (response) {
+                if (response.data.removed) {
+                    document.getElementById(id).remove();
+                    delete index[id];
+                }
+            });
+      }
+
+      async function query(id)
+      {
+            await axios.post('/search', { title: document.getElementById('title').value,
+                                          artist: document.getElementById('artist').value,
+                                          year: document.getElementById('year').value }).then(
+              function (response) {
+                  var results = document.getElementById('results');
+                  results.innerHTML = '';
+                  if (response.data.items.length == 0)
+                      results.innerHTML = '<div class = "message">No result is retrieved. Please query again</div>';
+                  response.data.items.forEach(item => {
+                    results.innerHTML += song(item, 'subscribe');
+                  });
+              });
+      }
+
+      function action(id, act)
+      {
+            if (act == 'subscribe') subscribe(id);
+            else remove(id);
+      }
+
+      function song(item, button)
+      {
+          let id = [item.year, item.artist, item.title].join('||');
+          if (id in index) return '';
+          let div = '<div class = "song" id = "' + id + '">';
+          div += '<div class = "picture"><img src = "https://pictures-s3967944.s3.amazonaws.com/' + item.artist.replace(' ', '+') + '"></div>';
+          div += '<div><div class = "year">' + item.year + '</div>';
+          div += '<div class = "artist">' + item.artist + '</div>';
+          div += '<div class = "title">' + item.title + '</div></div>';
+          div += '<div class = "button"><button id = "button-' + id + '" onclick = "action(' + "'" + id + "'" +  ',' + "'" + button + "'" + ')">' + button + '</button></div>';
+          div += '</div>';
+          return div;
+      }
+
+    </script>
+
+
+    <style type="text/css">
+        body {margin:0; padding:0; font-size: 24px; font-family: monospace; text-align: center; background-color: darkslateblue;}
+
+        .main {margin: 0 auto; width: 1400px; display: grid; justify-items: center;}
+      
+        #header {display: inline-flex; align-items: center; color: white; width: min-content;}
+        #user {margin-left: 32px; white-space: nowrap;}
+        #app {display: inline-block; text-align: center; font-size: 192px; font-weight: bold; padding-bottom: 64px;}
+
+        .area {border: solid 2px white; border-radius: 32px; color: #444; display: inline-block; padding: 64px; text-align: left; margin-top: 48px; justify-items: center;width: min-content; margin-bottom: 48px;}
+
+        .area h1 {margin: 18px 0 0 0; text-align: center; font-size: 40px;}
+
+        .form div {display: flex; align-items: center;}
+        .form label {padding: 18px 0 4px 0; text-align: left; display: inline-block; font-size: 28px;}
+        .form input {padding: 8px 16px; border: none; border-bottom: solid 1px #ccc; line-height: 40px; font-size: 20px; text-align: center; outline: none; margin-right: 18px; border-radius: 12px;}
+        
+        .form #title {width: 444px}
+        .form #artist {width: 333px}
+        .form #year {width: 55px}
+
+        #query {background-color: lightseagreen; color: white; font-weight: bold}
+        #subscription {background-color: white; width: 100%; border-radius: 48px;}
+
+        button {margin-left: 32px; border-radius: 12px; aspect-ratio: 1; padding: 18px 24px; font-size: 26px; cursor: pointer; width: auto; color: white; font-weight: bold;}
+        button {background: gold; color: #444; border: solid 1px gold;}
+
+        .song {display: inline-flex; flex-direction: row; align-items: center; margin: 12px 32px; text-align: center; padding: 0; background-color: #fafafa; border: solid 1px darkcyan; border-radius: 12px; color: #444; font-size: 18px; height: 128px;}
+        .song img {border-radius: 12px; max-width: 128px;}
+        .song div {text-align: left; margin-left: 14px;}
+        .song .picture {margin-left: 0;}
+        .song .button {height: 100%;}
+
+        #results {margin-top: 64px}
+        #results button, #subscription button {font-size: 16px; padding: 4px 6px; background-color: darkgreen; aspect-ratio: auto; height: 100%; border: none; color: white; margin: 0; writing-mode: vertical-rl;
+          text-orientation: mixed;}
+        #results button:hover {background-color: darkorange;}
+        #subscription button {background-color: #888;}
+        #subscription button:hover {background-color: darkred;}
+
+        .message {text-align: center;}
+       
+        #logout {display: block; position:fixed; border: 0; border-radius: 50%; background-color: mediumslateblue; bottom: 2%; right: 2%; padding: 14px; aspect-ratio: 1; text-decoration: none; font-size: 14px; font-family: monospace; color: lemonchiffon;font-weight: bold}
+        #logout span {font-size: 26px; line-height: 32px;}
+        #logout:hover {background-color: crimson;}
+
+    </style>
+
+    <div class = "main">
+    <div id = "header">
+        <div id = "app">μ*</div>
+
+        <div id = "user">
+            <h1><%= username %>'s space</h1>
+        </div>
+    </div>
+
+    <div id = "subscription" class = "area"></div>
+
+    <div id = "query" class = "area">
+      <div class = "form">
+          <div>
+              <span><label>Title</label><br><input type = "text" id = "title"></span>
+              <span><label>Artist</label><br><input type = "text" id = "artist"></span>
+              <span><label>Year</label><br><input type = "text" maxlength = "4" id = "year"></span>
+              <span class = "button"><button onclick = "query()">query</button></span>
+          </div>
+      </div>
+      <div id = "results"></div>
+    </div>
+
+
+  </div>
+
+  <a id = "logout" href = "/user/logout"><span>⏻</span><br>logout</a>
+
+  </body>
+</html>

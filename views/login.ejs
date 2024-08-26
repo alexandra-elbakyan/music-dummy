@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>setup</title>
+    <script src="/javascripts/axios.min.js"></script>
+  </head>
+  <body>
+    <script>
+
+      async function auth()
+      {
+          await axios.post('/user/login', { email: document.getElementById('email').value,
+                                         password: document.getElementById('password').value})
+          .then(function (response) {
+              if (response.data.authenticated)
+                  window.location.href = '/main';
+              else
+              {
+                  document.getElementById('error').style.display = 'block';
+                  document.getElementsByTagName('h1')[0].style.display = 'none';
+              }
+          });
+      }
+    
+    </script>
+
+
+    <style type="text/css">
+        body {margin:0; padding:0; font-size: 24px; font-family: monospace; text-align: center}
+
+        .main {display: inline-block;}
+        
+        #app {display: inline-block; width: 100%; text-align: center; font-size: 192px; font-weight: bold; color: #888; padding-bottom: 64px;}
+        #login {background-color: gold; border: solid 6px #444; border-radius: 32px; color: #444; display: grid; padding: 64px; text-align: left;}
+
+        #login h1 {margin: 18px 0 0 0; text-align: center; font-size: 64px;}
+        #login div {place-self: center; margin-top: 48px}
+
+        .form label {padding: 18px 18px 0 0; text-align: left; display: inline-block; font-size: 22px;}
+        .form input {padding: 8px 16px; border: none; border-bottom: solid 1px #ccc; line-height: 40px; font-size: 20px; text-align: center; outline: none; margin-right: 18px; border-radius: 12px;}
+        #login .form div {margin-top: 0;}
+
+        button {border: solid 1px gold; border-radius: 50%; aspect-ratio: 1; background: mediumseagreen; color: #444; padding: 12px 18px; font-size: 20px; cursor: pointer; width: auto; color: white; font-weight: bold;}
+        button:hover {border: dashed 1px white}
+
+        #login a {text-decoration: none; font-size: 18px; color: darkolivegreen}
+        #login a:hover {text-decoration: dotted underline;}
+
+        #error {font-size: 22px; text-align: center; display: none;}
+        #error span {font-size: 192px; line-height: 96px;}
+
+        #motto {font-size: 26px; color: #bbb}
+
+    </style>
+    <div class = "main">
+    <div id = "app">μ*<span id = "motto">for music</span></div>
+
+    <div id = "login">
+      <h1>login</h1>
+      <div id = "error"><span>☹</span><br>email or password<br>is invalid</div>
+      <div class = "form">
+          <div><label>Email</label><br><input type = "text" id = "email"></div>
+          <div><label>Password</label><br><input type = "password" id = "password"></div>
+      </div>
+      <div>
+          <button onclick = "auth()">login</button> <a href = "/user/register">register</a>
+      </div>
+    </div>
+  </div>
+
+  </body>
+</html>
